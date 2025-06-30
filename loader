@@ -1,0 +1,83 @@
+-- Fake Fullscreen Loading Screen with Kick (after 3-5 min)
+ 
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Name = "FakeLoadingScreen"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.DisplayOrder = 9999 -- ensures it's on top of all GUIs
+gui.Parent = player:WaitForChild("PlayerGui")
+ 
+-- Fullscreen Background
+local background = Instance.new("Frame")
+background.Size = UDim2.new(1, 0, 1, 0)
+background.Position = UDim2.new(0, 0, 0, 0)
+background.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+background.BorderSizePixel = 0
+background.ZIndex = 10
+background.Parent = gui
+ 
+-- "Loading..." Text
+local loadingText = Instance.new("TextLabel")
+loadingText.Size = UDim2.new(0.6, 0, 0.1, 0)
+loadingText.Position = UDim2.new(0.2, 0, 0.4, 0)
+loadingText.BackgroundTransparency = 1
+loadingText.TextColor3 = Color3.new(1, 1, 1)
+loadingText.TextScaled = true
+loadingText.Font = Enum.Font.GothamBold
+loadingText.Text = "Loading..."
+loadingText.ZIndex = 11
+loadingText.Parent = background
+ 
+-- Progress Bar Background
+local barBackground = Instance.new("Frame")
+barBackground.Size = UDim2.new(0.6, 0, 0.05, 0)
+barBackground.Position = UDim2.new(0.2, 0, 0.55, 0)
+barBackground.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+barBackground.BorderSizePixel = 0
+barBackground.ZIndex = 11
+barBackground.Parent = background
+ 
+-- Progress Bar Fill
+local barFill = Instance.new("Frame")
+barFill.Size = UDim2.new(0, 0, 1, 0)
+barFill.Position = UDim2.new(0, 0, 0, 0)
+barFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+barFill.BorderSizePixel = 0
+barFill.ZIndex = 12
+barFill.Parent = barBackground
+ 
+-- Percentage Label
+local percentText = Instance.new("TextLabel")
+percentText.Size = UDim2.new(1, 0, 1, 0)
+percentText.BackgroundTransparency = 1
+percentText.TextColor3 = Color3.new(1, 1, 1)
+percentText.TextScaled = true
+percentText.Font = Enum.Font.GothamBold
+percentText.Text = "0%"
+percentText.ZIndex = 13
+percentText.Parent = barBackground
+ 
+-- Timing
+local minTime = 180 -- 3 minutes
+local maxTime = 300 -- 5 minutes
+local totalTime = math.random(minTime, maxTime)
+local elapsedTime = 0
+ 
+local runService = game:GetService("RunService")
+ 
+-- Progress updater
+local connection
+connection = runService.Heartbeat:Connect(function(dt)
+	elapsedTime += dt
+	local progress = math.clamp(elapsedTime / totalTime, 0, 1)
+ 
+	barFill.Size = UDim2.new(progress, 0, 1, 0)
+	percentText.Text = math.floor(progress * 100) .. "%"
+ 
+	if progress >= 1 then
+		connection:Disconnect()
+		player:Kick("Same account launched game from different device. Reconnect if you prefer to use this device.\n(Error Code: 273)")
+	end
+end)
